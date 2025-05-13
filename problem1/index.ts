@@ -1,4 +1,4 @@
-//실행법 npx ts-node index.ts
+//실행법 npx ts-node index.ts 
 
 // 주어진 숫자 배열
 const numbers: number[] = [1, 3, 5, 7, 9];
