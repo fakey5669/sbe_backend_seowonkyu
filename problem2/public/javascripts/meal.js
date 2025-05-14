@@ -22,7 +22,7 @@ async function searchMeals() {
   document.getElementById('result').style.display = 'none';
   
   try {
-    let url = `/api/meals/mealAndAllergy?schoolName=${encodeURIComponent(schoolName)}`;
+    let url = `/api/meals/highSchoolMealAndAllergy?schoolName=${encodeURIComponent(schoolName)}`;
     if (startDate && endDate) {
       url += `&startDate=${startDate}&endDate=${endDate}`;
     }
