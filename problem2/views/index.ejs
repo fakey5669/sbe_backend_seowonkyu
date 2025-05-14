@@ -3,232 +3,52 @@
   <head>
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
-    <style>
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        line-height: 1.6;
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 20px;
-        color: #333;
-      }
-      h1 {
-        color: #333;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 10px;
-      }
-      h2 {
-        color: #444;
-        margin-top: 20px;
-      }
-      .school-info {
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-      }
-      .date-range {
-        font-size: 1.1em;
-        margin-bottom: 20px;
-        color: #0066cc;
-      }
-      .weekly-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        justify-content: space-between;
-      }
-      .day-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        padding: 15px;
-        width: calc(33.33% - 20px);
-        margin-bottom: 20px;
-        min-height: 200px;
-      }
-      .day-header {
-        border-bottom: 2px solid #f0f0f0;
-        padding-bottom: 10px;
-        margin-bottom: 15px;
-      }
-      .day-date {
-        font-size: 1.2em;
-        font-weight: bold;
-      }
-      .day-of-week {
-        color: #666;
-      }
-      .day-of-week.weekend {
-        color: #e74c3c;
-      }
-      .meal-type {
-        font-weight: bold;
-        margin-top: 15px;
-        margin-bottom: 5px;
-        color: #0066cc;
-      }
-      .menu-list {
-        list-style: none;
-        padding-left: 0;
-        margin-bottom: 10px;
-      }
-      .menu-item {
-        padding: 3px 0;
-      }
-      .allergy-tag {
-        display: inline-block;
-        background: #f8d7da;
-        color: #721c24;
-        font-size: 0.8em;
-        padding: 2px 6px;
-        border-radius: 3px;
-        margin-right: 5px;
-        margin-bottom: 5px;
-      }
-      .allergy-section {
-        margin-top: 10px;
-        padding-top: 10px;
-        border-top: 1px dashed #ddd;
-      }
-      .no-meal {
-        color: #999;
-        font-style: italic;
-      }
-      .error-message {
-        color: #721c24;
-        background-color: #f8d7da;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-      }
-      .allergy-legend {
-        margin-top: 30px;
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 5px;
-      }
-      .allergy-legend h3 {
-        margin-top: 0;
-      }
-      .allergy-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-      }
-      .allergy-item {
-        display: flex;
-        align-items: center;
-      }
-      .allergy-code {
-        background: #f8d7da;
-        color: #721c24;
-        width: 25px;
-        height: 25px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        margin-right: 8px;
-        font-size: 0.9em;
-      }
-      @media (max-width: 768px) {
-        .day-card {
-          width: calc(50% - 15px);
-        }
-        .allergy-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
-      @media (max-width: 576px) {
-        .day-card {
-          width: 100%;
-        }
-        .allergy-grid {
-          grid-template-columns: repeat(1, 1fr);
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // 알레르기 코드 정보를 전역 변수로 설정
+      window.ALLERGY_CODES = JSON.parse('<%- JSON.stringify(ALLERGY_CODES || {}) %>');
+    </script>
   </head>
   <body>
-    <h1><%= title %></h1>
+    <header>
+      <h1><i class="fas fa-utensils"></i> <%= title %></h1>
+    </header>
     
-    <% if (typeof error !== 'undefined') { %>
-      <div class="error-message">
-        <%= error %>
-      </div>
-    <% } else { %>
-      <div class="school-info">
-        <h2><%= schoolInfo.name %></h2>
-        <p>교육청 코드: <%= schoolInfo.officeCode %> | 학교 코드: <%= schoolInfo.schoolCode %></p>
+    <div class="container search-container">
+      <div class="form-group">
+        <label for="schoolName"><i class="fas fa-school"></i> 학교 이름</label>
+        <input type="text" id="schoolName" placeholder="예: 한일고등학교" required>
       </div>
       
-      <div class="date-range">
-        <%= dateRange.start %> ~ <%= dateRange.end %> 주간 급식 알레르기 정보
+      <div class="form-group">
+        <label for="month"><i class="far fa-calendar-alt"></i> 조회 월</label>
+        <input type="month" id="month">
+        <small>(선택하지 않으면 현재 월 기준으로 조회합니다)</small>
       </div>
       
-      <% if (weeklyMealData && weeklyMealData.length > 0) { %>
-        <div class="weekly-container">
-          <% weeklyMealData.forEach(day => { %>
-            <div class="day-card">
-              <div class="day-header">
-                <span class="day-date"><%= day.date %></span>
-                <span class="day-of-week <%= day.dayOfWeek === '토' || day.dayOfWeek === '일' ? 'weekend' : '' %>">
-                  (<%= day.dayOfWeek %>)
-                </span>
-              </div>
-              
-              <% if (day.meals && day.meals.length > 0) { %>
-                <% day.meals.forEach(meal => { %>
-                  <div class="meal-type"><%= meal.type %></div>
-                  <ul class="menu-list">
-                    <% meal.menu.forEach(item => { %>
-                      <li class="menu-item"><%= item %></li>
-                    <% }); %>
-                  </ul>
-                  
-                  <% if (meal.allergies && meal.allergies.length > 0) { %>
-                    <div class="allergy-section">
-                      <small>알레르기 정보:</small>
-                      <div>
-                        <% meal.allergies.forEach(allergy => { %>
-                          <span class="allergy-tag" title="<%= ALLERGY_CODES[allergy] || '알 수 없음' %>">
-                            <%= allergy %>
-                          </span>
-                        <% }); %>
-                      </div>
-                    </div>
-                  <% } else { %>
-                    <div class="allergy-section">
-                      <small>알레르기 유발 식품 없음</small>
-                    </div>
-                  <% } %>
-                <% }); %>
-              <% } else { %>
-                <p class="no-meal">급식 정보가 없습니다.</p>
-              <% } %>
-            </div>
-          <% }); %>
-        </div>
-      <% } else { %>
-        <div class="error-message">
-          <p>해당 기간에 급식 정보가 없습니다.</p>
-          <p>학교 급식 정보가 등록되지 않았거나, 방학 기간일 수 있습니다.</p>
-          <p>다른 기간의 데이터를 확인해보세요.</p>
-        </div>
-      <% } %>
-    <% } %>
+      <button onclick="searchMeals()"><i class="fas fa-search"></i> 급식 정보 조회</button>
+    </div>
+    
+    <div id="loading" class="loading" style="display:none;">
+      <div class="spinner"></div>
+      <p>급식 정보를 불러오는 중입니다...</p>
+    </div>
+    
+    <div id="result" class="container result-container" style="display:none;">
+      <div id="schoolInfo" class="school-info"></div>
+      <div id="weeklyContainer" class="weekly-container"></div>
+    </div>
     
     <div class="allergy-legend">
-      <h3>알레르기 유발 식품 코드표</h3>
-      <div class="allergy-grid">
-        <% Object.entries(ALLERGY_CODES).forEach(([code, name]) => { %>
-          <div class="allergy-item">
-            <span class="allergy-code"><%= code %></span>
-            <span><%= name %></span>
-          </div>
-        <% }); %>
-      </div>
+      <h3><i class="fas fa-exclamation-circle"></i> 알레르기 유발 식품 코드표</h3>
+      <div class="allergy-grid" id="allergyGrid"></div>
     </div>
+    
+    <footer>
+      <p>© 2025 학교 급식 정보 서비스 | NEIS Open API 활용</p>
+    </footer>
+    
+    <script src="/javascripts/meal.js"></script>
   </body>
 </html>

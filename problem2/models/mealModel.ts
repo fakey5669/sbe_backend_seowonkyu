@@ -78,22 +78,10 @@ export const ALLERGY_CODES: Record<string, string> = {
   '15': '닭고기',
   '16': '쇠고기',
   '17': '오징어',
-  '18': '조개류'
+  '18': '조개류',
+  '19': '잣',
 };
 
-// 원본 API 응답을 가져오는 함수 (Postman 테스트용)
-export const getRawMealApiResponse = async (params: MealApiParams): Promise<any> => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}${MEAL_SERVICE_PATH}`, {
-      params
-    });
-    
-    return response.data;
-  } catch (error) {
-    console.error('API 호출 중 오류 발생:', error);
-    throw new Error('API 호출에 실패했습니다.');
-  }
-};
 
 // 급식 정보를 가져오는 함수
 export const getMealInfo = async (params: MealApiParams): Promise<MealInfo[]> => {
@@ -112,12 +100,11 @@ export const getMealInfo = async (params: MealApiParams): Promise<MealInfo[]> =>
 
     console.log('API 요청 파라미터:', params);
     
-    const response = await axios.get<MealResponse | any>(`${API_BASE_URL}${MEAL_SERVICE_PATH}`, {
+    const response = await axios.get<any>(`${API_BASE_URL}${MEAL_SERVICE_PATH}`, {
       params
     });
     
     console.log('API 응답 상태:', response.status);
-    console.log('API 응답 데이터:', JSON.stringify(response.data, null, 2));
     
     // 에러 응답 처리
     if (response.data.RESULT && response.data.RESULT.CODE !== 'INFO-000') {
@@ -162,6 +149,7 @@ export const getMealInfo = async (params: MealApiParams): Promise<MealInfo[]> =>
 
 // 알레르기 정보 추출 함수
 export const extractAllergies = (menuText: string): string[] => {
+    //알레르기 코드 추출 정규식
   const allergyRegex = /\(([0-9\.]+)\)/g;
   const matches = menuText.match(allergyRegex) || [];
   

@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 라우트 설정
 app.use('/', indexRouter);
 app.use('/api/meals', mealRoutes);
 
@@ -33,9 +34,11 @@ app.use(function(err: any, req: Request, res: Response, next: NextFunction) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  // API 오류 응답
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || '서버 오류가 발생했습니다.'
+  });
 });
 
 export default app; 
