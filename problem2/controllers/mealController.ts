@@ -1,21 +1,82 @@
 import { Request, Response } from 'express';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import * as mealModel from '../models/mealModel';
 
-// API 키와 기본 파라미터
+/**
+ * 환경 변수 설정
+ */
 const API_KEY = 'b75bf16a842a41d9b78cf30644ea3259'; // 실제 운영 시 환경 변수에서 가져오는 것이 좋습니다
 
-// 학교 이름으로 주간 급식 정보 조회 (통합 기능)
+/**
+ * 학교 정보 인터페이스
+ */
+interface SchoolInfo {
+  ATPT_OFCDC_SC_CODE: string;
+  ATPT_OFCDC_SC_NM: string;
+  SD_SCHUL_CODE: string;
+  SCHUL_NM: string;
+  SCHUL_KND_SC_NM: string;
+  ORG_RDNMA: string;
+  [key: string]: string;
+}
+
+/**
+ * 학교 API 응답 인터페이스
+ */
+interface SchoolApiResponse {
+  schoolInfo?: Array<{
+    head: Array<{
+      list_total_count: number;
+      RESULT: Array<{
+        CODE: string;
+        MESSAGE: string;
+      }>;
+    }>;
+    row?: SchoolInfo[];
+  }>;
+  RESULT?: {
+    CODE: string;
+    MESSAGE: string;
+  };
+}
+
+/**
+ * 학교 정보 결과 인터페이스
+ */
+interface SchoolInfoResult {
+  name: string;
+  code: string;
+  officeCode: string;
+  officeName: string;
+  address: string;
+}
+
+/**
+ * API 응답 인터페이스
+ */
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  schoolInfo?: SchoolInfoResult;
+  data?: T;
+}
+
+/**
+ * 학교 이름으로 주간 급식 정보 조회 (통합 기능)
+ * @param req Express 요청 객체
+ * @param res Express 응답 객체
+ */
 export const getMealsBySchoolName = async (req: Request, res: Response): Promise<void> => {
   try {
     const { schoolName, startDate, endDate } = req.query;
     
     // 필수 파라미터 검증
     if (!schoolName) {
-      res.status(400).json({ 
+      const errorResponse: ApiResponse<null> = { 
         success: false, 
         message: '학교 이름은 필수 항목입니다.' 
-      });
+      };
+      res.status(400).json(errorResponse);
       return;
     }
     
@@ -45,39 +106,53 @@ export const getMealsBySchoolName = async (req: Request, res: Response): Promise
       SCHUL_NM: schoolName
     };
     
-    const schoolResponse = await axios.get(schoolInfoUrl, { params: schoolParams });
+    const schoolResponse: AxiosResponse<SchoolApiResponse> = await axios.get(schoolInfoUrl, { params: schoolParams });
     
     // 학교 검색 결과 확인
     if (schoolResponse.data.RESULT && schoolResponse.data.RESULT.CODE === 'INFO-200') {
-      res.status(200).json({
+      const emptyResponse: ApiResponse<mealModel.WeeklyMealWithAllergy[]> = {
         success: true,
         message: '검색 결과가 없습니다.',
         data: []
-      });
+      };
+      res.status(200).json(emptyResponse);
       return;
     }
     
     // 학교 정보 추출
-    const schools = schoolResponse.data.schoolInfo[1].row;
+    const schoolInfo = schoolResponse.data.schoolInfo;
+    if (!schoolInfo || !Array.isArray(schoolInfo) || schoolInfo.length < 2) {
+      const errorResponse: ApiResponse<mealModel.WeeklyMealWithAllergy[]> = {
+        success: true,
+        message: '학교 정보를 가져오는데 실패했습니다.',
+        data: []
+      };
+      res.status(200).json(errorResponse);
+      return;
+    }
+    
+    const schools = schoolInfo[1].row;
     
     if (!schools || schools.length === 0) {
-      res.status(200).json({
+      const emptyResponse: ApiResponse<mealModel.WeeklyMealWithAllergy[]> = {
         success: true,
         message: '검색된 학교가 없습니다.',
         data: []
-      });
+      };
+      res.status(200).json(emptyResponse);
       return;
     }
     
     // 고등학교만 필터링
-    const highSchools = schools.filter((school: any) => school.SCHUL_KND_SC_NM === '고등학교');
+    const highSchools = schools.filter((school: SchoolInfo) => school.SCHUL_KND_SC_NM === '고등학교');
     
     if (highSchools.length === 0) {
-      res.status(200).json({
+      const emptyResponse: ApiResponse<mealModel.WeeklyMealWithAllergy[]> = {
         success: true,
         message: '검색된 고등학교가 없습니다.',
         data: []
-      });
+      };
+      res.status(200).json(emptyResponse);
       return;
     }
     
@@ -145,22 +220,30 @@ export const getMealsBySchoolName = async (req: Request, res: Response): Promise
     // 날짜순으로 정렬
     weeklyMeals.sort((a, b) => a.date.localeCompare(b.date));
     
-    res.status(200).json({
+    // 응답 데이터 구성
+    const schoolInfoResult: SchoolInfoResult = {
+      name: selectedSchool.SCHUL_NM,
+      code: schoolCode,
+      officeCode: officeCode,
+      officeName: selectedSchool.ATPT_OFCDC_SC_NM,
+      address: selectedSchool.ORG_RDNMA
+    };
+    
+    const successResponse: ApiResponse<mealModel.WeeklyMealWithAllergy[]> = {
       success: true,
-      schoolInfo: {
-        name: selectedSchool.SCHUL_NM,
-        code: schoolCode,
-        officeCode: officeCode,
-        officeName: selectedSchool.ATPT_OFCDC_SC_NM,
-        address: selectedSchool.ORG_RDNMA
-      },
+      schoolInfo: schoolInfoResult,
       data: weeklyMeals
-    });
+    };
+    
+    res.status(200).json(successResponse);
   } catch (error) {
     console.error('학교 이름으로 급식 정보 조회 중 오류 발생:', error);
-    res.status(500).json({
+    
+    const errorResponse: ApiResponse<null> = {
       success: false,
       message: '급식 정보를 가져오는데 실패했습니다.'
-    });
+    };
+    
+    res.status(500).json(errorResponse);
   }
 }; 
