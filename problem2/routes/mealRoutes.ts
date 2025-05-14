@@ -31,13 +31,13 @@ class MealRouter implements MealRouterInterface {
 
   /**
    * 급식 및 알레르기 정보 조회 라우트
-   * @route   GET /api/meals/mealAndAllergy
+   * @route   GET /api/meals/highSchoolMealAndAllergy
    * @desc    학교 이름으로 급식 정보 조회 (통합 기능)
    * @params  schoolName, [startDate], [endDate]
    * @access  Public
    */
   public getMealAndAllergy(): Router {
-    this.router.get('/mealAndAllergy', mealController.getMealsBySchoolName);
+    this.router.get('/highSchoolMealAndAllergy', mealController.getMealsBySchoolName);
     return this.router;
   }
 

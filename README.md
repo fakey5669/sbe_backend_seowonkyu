@@ -41,7 +41,7 @@ npm start
 
 학교 이름으로 급식 정보와 알레르기 정보를 조회합니다.
 
-- **URL**: `/api/meals/mealAndAllergy`
+- **URL**: `/api/meals/highSchoolMealAndAllergy`
 - **Method**: `GET`
 - **인증**: 필요 없음
 
@@ -122,5 +122,5 @@ npm start
 ```
 
 ## API 사용 예시
- "http://localhost:3000/api/meals/mealAndAllergy?schoolName=한일고등학교"
+ "http://localhost:3000/api/meals/highSchoolMealAndAllergy?schoolName=한일고등학교"
 
