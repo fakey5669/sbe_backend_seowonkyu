@@ -27,10 +27,6 @@ cd problem2
 
 # 개발 모드로 실행
 npm run dev
-
-# 또는 빌드 후 실행
-npm run build
-npm start
 ```
 
 서버는 기본적으로 `http://localhost:3000`에서 실행됩니다.
