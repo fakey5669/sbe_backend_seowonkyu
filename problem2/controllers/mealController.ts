@@ -5,22 +5,6 @@ import * as mealModel from '../models/mealModel';
 // API 키와 기본 파라미터
 const API_KEY = 'b75bf16a842a41d9b78cf30644ea3259'; // 실제 운영 시 환경 변수에서 가져오는 것이 좋습니다
 
-// 학교 유형 한글명을 코드로 변환
-function getSchoolType(schoolTypeName: string): string {
-  switch (schoolTypeName) {
-    case '초등학교':
-      return 'elementary';
-    case '중학교':
-      return 'middle';
-    case '고등학교':
-      return 'high';
-    case '특수학교':
-      return 'special';
-    default:
-      return 'other';
-  }
-}
-
 // 학교 이름으로 주간 급식 정보 조회 (통합 기능)
 export const getMealsBySchoolName = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -44,8 +28,6 @@ export const getMealsBySchoolName = async (req: Request, res: Response): Promise
       const year = now.getFullYear();
       const month = now.getMonth() + 1;
       
-      // 현재 월의 첫날
-      const firstDay = new Date(year, month - 1, 1);
       // 현재 월의 마지막날
       const lastDay = new Date(year, month, 0);
       
