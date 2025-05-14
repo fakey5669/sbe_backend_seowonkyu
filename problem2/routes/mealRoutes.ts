@@ -37,7 +37,7 @@ class MealRouter implements MealRouterInterface {
    * @access  Public
    */
   public getMealAndAllergy(): Router {
-    this.router.get('/highSchoolMealAndAllergy', mealController.getMealsBySchoolName);
+    this.router.get('/schoolMealAndAllergy', mealController.getMealsBySchoolName);
     return this.router;
   }
 

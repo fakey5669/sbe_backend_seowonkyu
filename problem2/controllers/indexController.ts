@@ -23,7 +23,7 @@ class IndexController {
   public renderMainPage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const pageData: IndexPageData = {
-        title: '고등학교 급식 정보 조회',
+        title: '학교 급식 정보 조회',
         ALLERGY_CODES
       };
       

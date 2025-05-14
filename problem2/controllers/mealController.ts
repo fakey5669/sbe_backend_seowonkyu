@@ -143,21 +143,8 @@ export const getMealsBySchoolName = async (req: Request, res: Response): Promise
       return;
     }
     
-    // 고등학교만 필터링
-    const highSchools = schools.filter((school: SchoolInfo) => school.SCHUL_KND_SC_NM === '고등학교');
-    
-    if (highSchools.length === 0) {
-      const emptyResponse: ApiResponse<mealModel.WeeklyMealWithAllergy[]> = {
-        success: true,
-        message: '검색된 고등학교가 없습니다.',
-        data: []
-      };
-      res.status(200).json(emptyResponse);
-      return;
-    }
-    
-    // 첫 번째 고등학교 선택 (여러 개가 검색될 경우)
-    const selectedSchool = highSchools[0];
+    // 첫 번째 학교 선택 (여러 개가 검색될 경우)
+    const selectedSchool = schools[0];
     const schoolCode = selectedSchool.SD_SCHUL_CODE;
     const officeCode = selectedSchool.ATPT_OFCDC_SC_CODE;
     
@@ -203,10 +190,13 @@ export const getMealsBySchoolName = async (req: Request, res: Response): Promise
           return codes.map(c => mealModel.getAllergyName(c));
         }).flat();
         
+        // 중복 알레르기 제거
+        const uniqueAllergies = [...new Set(allergyNames)];
+        
         return {
           type: meal.MMEAL_SC_NM,
           menu,
-          allergies: allergyNames
+          allergies: uniqueAllergies
         };
       });
       
