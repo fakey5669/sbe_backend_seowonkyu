@@ -204,30 +204,26 @@ function renderResult(data) {
           const menuList = document.createElement('ul');
           menuList.className = 'cell-menu-list';
           
-          mealInfo.menu.forEach(item => {
+          mealInfo.menu.forEach((item, idx) => {
             const menuItem = document.createElement('li');
             menuItem.className = 'cell-menu-item';
-            menuItem.textContent = item;
+            
+            // 메뉴 텍스트 컨테이너 생성
+            const menuItemContent = document.createElement('div');
+            menuItemContent.className = 'menu-item-content';
+            
+            // 메뉴 텍스트 추가 (원본 그대로 표시)
+            const menuText = document.createElement('span');
+            menuText.className = 'menu-text';
+            menuText.textContent = item;
+            
+            // 알레르기 정보가 포함된 메뉴 표시
+            menuItemContent.appendChild(menuText);
+            menuItem.appendChild(menuItemContent);
             menuList.appendChild(menuItem);
           });
           
           dateCell.appendChild(menuList);
-          
-          // 알레르기 정보
-          if (mealInfo.allergies && mealInfo.allergies.length > 0) {
-            const allergyContainer = document.createElement('div');
-            allergyContainer.className = 'cell-allergy-container';
-            
-            mealInfo.allergies.forEach(allergy => {
-              const allergyTag = document.createElement('span');
-              allergyTag.className = 'cell-allergy-tag';
-              allergyTag.textContent = allergy;
-              allergyTag.title = `알레르기 유발 식품: ${allergy}`;
-              allergyContainer.appendChild(allergyTag);
-            });
-            
-            dateCell.appendChild(allergyContainer);
-          }
         } else {
           const noMeal = document.createElement('p');
           noMeal.className = 'no-meal-cell';

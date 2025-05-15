@@ -220,11 +220,14 @@ export const parseMenuItems = (menuText: string): {menu: string[], allergies: st
   const menuItems: string[] = menuText.split('<br/>');
   const allAllergies = new Set<string>();
   
-  const cleanedMenuItems = menuItems.map(item => {
+  // 알레르기 정보 추출 (괄호 안의 숫자)
+  menuItems.forEach(item => {
     const itemAllergies = extractAllergies(item);
     itemAllergies.forEach(allergy => allAllergies.add(allergy));
-    return cleanMenuText(item);
-  }).filter(Boolean);
+  });
+  
+  // 메뉴 항목은 그대로 유지 (알레르기 정보 제거하지 않음)
+  const cleanedMenuItems = menuItems.filter(Boolean);
   
   return {
     menu: cleanedMenuItems,

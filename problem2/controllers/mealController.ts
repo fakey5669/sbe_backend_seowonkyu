@@ -184,19 +184,11 @@ export const getMealsBySchoolName = async (req: Request, res: Response): Promise
       const processedMeals = meals.map(meal => {
         const { menu, allergies } = mealModel.parseMenuItems(meal.DDISH_NM);
         
-        // 알레르기 정보를 코드에서 이름으로 변환
-        const allergyNames = allergies.map(code => {
-          const codes = code.split('.');
-          return codes.map(c => mealModel.getAllergyName(c));
-        }).flat();
-        
-        // 중복 알레르기 제거
-        const uniqueAllergies = [...new Set(allergyNames)];
-        
+        // 원본 알레르기 코드를 그대로 유지 (이름으로 변환하지 않음)
         return {
           type: meal.MMEAL_SC_NM,
           menu,
-          allergies: uniqueAllergies
+          allergies: allergies
         };
       });
       
