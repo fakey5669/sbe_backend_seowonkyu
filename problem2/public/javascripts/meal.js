@@ -117,13 +117,16 @@ function renderResult(data) {
         const type = meal.type;
         dateMap[dayDate].meals[type] = {
           menu: meal.menu,
-          allergies: meal.allergies
+          allergies: meal.allergies,
+          calInfo: meal.calInfo,
+          ntrInfo: meal.ntrInfo,
+          orplcInfo: meal.orplcInfo
         };
       });
     }
   });
   
-  // 날짜 정렬
+  // 날짜 정렬 (YYYY-MM-DD 형식이므로 문자열 비교로도 정렬 가능)
   const sortedDates = Object.keys(dateMap).sort();
   
   // 달력 형태로 데이터 구성
@@ -158,10 +161,12 @@ function renderResult(data) {
       const firstDateStr = sortedDates[0];
       const year = parseInt(firstDateStr.split('-')[0]);
       const month = parseInt(firstDateStr.split('-')[1]) - 1;
-      const day = parseInt(firstDateStr.split('-')[2]);
       
-      const firstDate = new Date(year, month, day);
-      const firstDayOfWeek = firstDate.getDay(); // 0: 일요일, 1: 월요일, ...
+      // 월의 모든 날짜를 표시하기 위해 해당 월의 첫날과 마지막 날 계산
+      const firstDayOfMonth = new Date(year, month, 1);
+      const lastDayOfMonth = new Date(year, month + 1, 0);
+      const firstDayOfWeek = firstDayOfMonth.getDay(); // 0: 일요일, 1: 월요일
+      const lastDate = lastDayOfMonth.getDate();
       
       // 달력 생성
       let currentRow = document.createElement('div');
@@ -174,14 +179,14 @@ function renderResult(data) {
         currentRow.appendChild(emptyCell);
       }
       
-      // 날짜별 셀 생성
-      sortedDates.forEach((dateStr, index) => {
-        const dateInfo = dateMap[dateStr];
-        const date = new Date(dateStr);
-        const dayOfWeek = date.getDay();
+      // 달의 모든 날짜를 순차적으로 표시
+      for (let day = 1; day <= lastDate; day++) {
+        const currDate = new Date(year, month, day);
+        const dayOfWeek = currDate.getDay();
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         
-        // 새로운 주 시작
-        if (index > 0 && dayOfWeek === 0) {
+        // 새로운 주 시작 (일요일이면 새로운 줄)
+        if (day > 1 && dayOfWeek === 0) {
           mealContainer.appendChild(currentRow);
           currentRow = document.createElement('div');
           currentRow.className = 'calendar-row';
@@ -193,12 +198,70 @@ function renderResult(data) {
         // 날짜 표시
         const dateHeader = document.createElement('div');
         dateHeader.className = 'cell-date';
-        dateHeader.textContent = dateStr.split('-')[2]; // 일자만 표시
+        dateHeader.textContent = day; // 일자만 표시
         dateCell.appendChild(dateHeader);
         
-        // 급식 정보 표시
-        if (dateInfo.meals[mealType]) {
-          const mealInfo = dateInfo.meals[mealType];
+        // 해당 날짜에 급식 정보가 있는지 확인
+        if (dateMap[dateStr] && dateMap[dateStr].meals[mealType]) {
+          const mealInfo = dateMap[dateStr].meals[mealType];
+          
+          // 칼로리와 영양 정보 표시 - 날짜 바로 아래에 위치
+          if (mealInfo.calInfo || mealInfo.ntrInfo || mealInfo.orplcInfo) {
+            const infoBox = document.createElement('div');
+            infoBox.className = 'meal-info-box';
+            
+            // 칼로리 정보 있으면 추가
+            if (mealInfo.calInfo) {
+              const calInfo = document.createElement('div');
+              calInfo.className = 'cal-info-box';
+              calInfo.innerHTML = `<i class="fas fa-fire"></i> ${mealInfo.calInfo}`;
+              infoBox.appendChild(calInfo);
+            }
+            
+            // 영양 정보 있으면 추가 (툴팁으로 표시)
+            if (mealInfo.ntrInfo) {
+              const ntrInfo = document.createElement('div');
+              ntrInfo.className = 'ntr-info-box';
+              
+              const ntrIcon = document.createElement('span');
+              ntrIcon.className = 'ntr-icon';
+              ntrIcon.innerHTML = `<i class="fas fa-apple-alt"></i>`;
+              
+              const ntrTooltip = document.createElement('div');
+              ntrTooltip.className = 'tooltip-content';
+              
+              // 영양 정보 파싱 및 표시
+              const ntrData = mealInfo.ntrInfo.split('<br/>').join('\n');
+              ntrTooltip.textContent = ntrData;
+              
+              ntrInfo.appendChild(ntrIcon);
+              ntrInfo.appendChild(ntrTooltip);
+              infoBox.appendChild(ntrInfo);
+            }
+            
+            // 원산지 정보 있으면 추가 (툴팁으로 표시)
+            if (mealInfo.orplcInfo) {
+              const orplcInfo = document.createElement('div');
+              orplcInfo.className = 'orplc-info-box';
+              
+              const orplcIcon = document.createElement('span');
+              orplcIcon.className = 'orplc-icon';
+              orplcIcon.innerHTML = `<i class="fas fa-map-marker-alt"></i>`;
+              
+              const orplcTooltip = document.createElement('div');
+              orplcTooltip.className = 'tooltip-content';
+              
+              // 원산지 정보 파싱 및 표시
+              const orplcData = mealInfo.orplcInfo.split('<br/>').join('\n');
+              orplcTooltip.textContent = orplcData;
+              
+              orplcInfo.appendChild(orplcIcon);
+              orplcInfo.appendChild(orplcTooltip);
+              infoBox.appendChild(orplcInfo);
+            }
+            
+            dateCell.appendChild(infoBox);
+          }
           
           // 메뉴 목록
           const menuList = document.createElement('ul');
@@ -232,13 +295,10 @@ function renderResult(data) {
         }
         
         currentRow.appendChild(dateCell);
-      });
+      }
       
       // 마지막 주 빈칸 채우기
-      const lastDateStr = sortedDates[sortedDates.length - 1];
-      const lastDate = new Date(lastDateStr);
-      const lastDayOfWeek = lastDate.getDay();
-      
+      const lastDayOfWeek = new Date(year, month, lastDate).getDay();
       for (let i = lastDayOfWeek + 1; i < 7; i++) {
         const emptyCell = document.createElement('div');
         emptyCell.className = 'calendar-cell empty-cell';

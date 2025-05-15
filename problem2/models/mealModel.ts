@@ -71,6 +71,9 @@ export interface MenuItem {
   type: string;
   menu: string[];
   allergies: string[];
+  calInfo?: string;
+  ntrInfo?: string;
+  orplcInfo?: string;
 }
 
 /**
@@ -216,7 +219,7 @@ export const cleanMenuText = (menuText: string): string => {
  * @param menuText 메뉴 텍스트
  * @returns 메뉴 항목 및 알레르기 정보
  */
-export const parseMenuItems = (menuText: string): {menu: string[], allergies: string[]} => {
+export const parseMenuItems = (menuText: string, calInfo?: string, ntrInfo?: string, orplcInfo?: string): {menu: string[], allergies: string[], calInfo?: string, ntrInfo?: string, orplcInfo?: string} => {
   const menuItems: string[] = menuText.split('<br/>');
   const allAllergies = new Set<string>();
   
@@ -231,7 +234,10 @@ export const parseMenuItems = (menuText: string): {menu: string[], allergies: st
   
   return {
     menu: cleanedMenuItems,
-    allergies: Array.from(allAllergies)
+    allergies: Array.from(allAllergies),
+    calInfo,
+    ntrInfo,
+    orplcInfo
   };
 };
 

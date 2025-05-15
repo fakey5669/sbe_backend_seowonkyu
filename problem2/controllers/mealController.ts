@@ -182,13 +182,21 @@ export const getMealsBySchoolName = async (req: Request, res: Response): Promise
       const formattedDate = `${date.substring(0, 4)}-${date.substring(4, 6)}-${date.substring(6, 8)}`;
       
       const processedMeals = meals.map(meal => {
-        const { menu, allergies } = mealModel.parseMenuItems(meal.DDISH_NM);
+        const { menu, allergies } = mealModel.parseMenuItems(
+          meal.DDISH_NM,
+          meal.CAL_INFO,    // 칼로리 정보 추가
+          meal.NTR_INFO,    // 영양 정보 추가
+          meal.ORPLC_INFO   // 원산지 정보 추가
+        );
         
         // 원본 알레르기 코드를 그대로 유지 (이름으로 변환하지 않음)
         return {
           type: meal.MMEAL_SC_NM,
           menu,
-          allergies: allergies
+          allergies: allergies,
+          calInfo: meal.CAL_INFO,    // 칼로리 정보 추가
+          ntrInfo: meal.NTR_INFO,    // 영양 정보 추가
+          orplcInfo: meal.ORPLC_INFO // 원산지 정보 추가
         };
       });
       
