@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import * as mealController from './mealController';
 import { ALLERGY_CODES } from '../models/mealModel';
 
 /**
