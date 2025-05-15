@@ -5,7 +5,7 @@ import * as mealModel from '../models/mealModel';
 /**
  * 환경 변수 설정
  */
-const API_KEY = 'b75bf16a842a41d9b78cf30644ea3259'; // 실제 운영 시 환경 변수에서 가져오는 것이 좋습니다
+const API_KEY = 'b75bf16a842a41d9b78cf30644ea3259'; // 공개되도 상관없고 git엔 .env올리기를 지양해 하드코딩. 만약 운영이라면 환경변수나 secret key로 관리
 
 /**
  * 학교 정보 인터페이스
